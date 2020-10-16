@@ -4,17 +4,44 @@ import { TOKEN_AGORA } from "../agora.common";
 import { DiallerRingtone } from "./dialler-ringtone";
 import {Global } from './global';
 
+interface LocalInvitation {
+    calleeId: string;
+    // ...
+    android: any; // native LocalInvitation
+    ios: any;
+}
+
+/**
+ * agoraEngine.on('joinChannelSuccess', (evt) => {
+ * evt.channel,
+ * evt.uid,
+ * evt.elapsed
+ * })
+ */
+
 @Interfaces([io.agora.rtm.RtmClientListener, io.agora.rtm.RtmCallEventListener])
 export class EngineEventListener extends io.agora.rtc.IRtcEngineEventHandler {
 
+    private owner: WeakRef<Agora>;
 
-    constructor(private agora: Agora) {
+
+    constructor(agora: Agora) {
         super();
-       
+        this.owner = new WeakRef(agora);
     }
 
     public onJoinChannelSuccess(channel: string, uid: number, elapsed: number): void {
-       console.log("onJoinChannelSuccess")
+       console.log("onJoinChannelSuccess");
+       const agora = this.owner.get();
+       if(agora) {
+           agora.notify({
+               eventName: "joinChannelSuccess",
+               object: agora,
+               channel,
+               uid,
+               elapsed
+           });
+       }
     }
 
     public onUserOffline(uid: number, reason: number): void {
@@ -49,6 +76,7 @@ export class EngineEventListener extends io.agora.rtc.IRtcEngineEventHandler {
 
     public onLocalInvitationCanceled(localInvitation: io.agora.rtm.LocalInvitation): void {
        console.log("onLocalInvitationCanceled")
+       localInvitation.
         
     }
 
